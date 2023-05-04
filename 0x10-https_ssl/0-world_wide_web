@@ -1,22 +1,17 @@
 #!/usr/bin/env bash
-# This script checks the DNS records for specified subdomains of a given domain.
-# It takes two arguments: the domain name (e.g., example.com) and an optional subdomain name (e.g., www).
-# If the subdomain argument is not provided, it checks the DNS records for the following subdomains: "www", "lb-01", "web-01", and "web-02".
-# The script uses the dig command to perform DNS lookups and extracts the relevant information from the output using grep and awk.
-# It includes a check_domain function that can be called separately or integrated into other scripts.
-# Note: A shellcheck disable comment is included to suppress the SC2086 warning about word splitting.
- 
+# shellcheck disable=SC2086
+# Information about server domains
+
 check_domain() {
     # Check for a valid domain
     SUBDOMAINS=("www"  "lb-01" "web-01" "web-02")
     if [ -z "$2" ]; then
-        for i in "${SUBDOMAINS[@]}"; do
-            dig "$i.$1" | grep -A1 'ANSWER SECTION:' | tail -n1 | awk '{split($0, SUBDOMAIN, "."); print "The subdomain " SUBDOMAIN[1] " is a " $4 " record and points to " $5}'
-        done
+	for i in "${SUBDOMAINS[@]}"; do
+	    dig "$i.$1" | grep -A1 'ANSWER SECTION:' | tail -n1 | awk '{split($0, SUBDOMAIN, "."); print "The subdomain " SUBDOMAIN[1] " is a " $4 " record and points to " $5}'
+	done
     else
-        dig "$2.$1" | grep -A1 'ANSWER SECTION:' | tail -n1 | awk '{split($0, SUBDOMAIN, "."); print "The subdomain " SUBDOMAIN[1] " is a " $4 " record and points to " $5}'
+	dig "$2.$1" | grep -A1 'ANSWER SECTION:' | tail -n1 | awk '{split($0, SUBDOMAIN, "."); print "The subdomain " SUBDOMAIN[1] " is a " $4 " record and points to " $5}'
     fi
 }
 
 check_domain "$1" "$2"
-
